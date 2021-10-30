@@ -1,40 +1,76 @@
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
+
 const config = {
-    apiKey: "AIzaSyA4_uV-qJnbhhA3onppdF8617No1ieDFLA",
-    authDomain: "ecom-db-33dbe.firebaseapp.com",
-    projectId: "ecom-db-33dbe",
-    storageBucket: "ecom-db-33dbe.appspot.com",
-    messagingSenderId: "362185503979",
-    appId: "1:362185503979:web:f6687d99375d087c723aae"
+    apiKey: 'AIzaSyCdHT-AYHXjF7wOrfAchX4PIm3cSj5tn14',
+    authDomain: 'crwn-db.firebaseapp.com',
+    databaseURL: 'https://crwn-db.firebaseio.com',
+    projectId: 'crwn-db',
+    storageBucket: 'crwn-db.appspot.com',
+    messagingSenderId: '850995411664',
+    appId: '1:850995411664:web:7ddc01d597846f65',
 };
 
+firebase.initializeApp(config);
+
 export const createUserProfileDocument = async (userAuth, additionalData) => {
-    if(!userAuth) return;
+    if (!userAuth) return;
 
     const userRef = firestore.doc(`users/${userAuth.uid}`);
+
     const snapShot = await userRef.get();
 
-    if(!snapShot.exists){
+    if (!snapShot.exists) {
         const { displayName, email } = userAuth;
         const createdAt = new Date();
-
-        try{
+        try {
             await userRef.set({
                 displayName,
                 email,
                 createdAt,
-                ...additionalData
-            })
-        } catch(error) {
-            console.log('error creating user',error.message);
+                ...additionalData,
+            });
+        } catch (error) {
+            console.log('error creating user', error.message);
         }
     }
-    return userRef;
-}
 
-firebase.initializeApp(config);
+    return userRef;
+};
+
+export const addCollectionAndDocuments = async (
+    collectionKey,
+    objectsToAdd
+) => {
+    const collectionRef = firestore.collection(collectionKey);
+
+    const batch = firestore.batch();
+    objectsToAdd.forEach((obj) => {
+        const newDocRef = collectionRef.doc();
+        batch.set(newDocRef, obj);
+    });
+
+    return await batch.commit();
+};
+
+export const convertCollectionsSnapshotToMap = (collections) => {
+    const transformedCollection = collections.docs.map((doc) => {
+        const { title, items } = doc.data();
+
+        return {
+            routeName: encodeURI(title.toLowerCase()),
+            id: doc.id,
+            title,
+            items,
+        };
+    });
+
+    return transformedCollection.reduce((accumulator, collection) => {
+        accumulator[collection.title.toLowerCase()] = collection;
+        return accumulator;
+    }, {});
+};
 
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
