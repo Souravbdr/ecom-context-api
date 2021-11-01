@@ -3,13 +3,12 @@ import 'firebase/compat/firestore';
 import 'firebase/compat/auth';
 
 const config = {
-    apiKey: 'AIzaSyCdHT-AYHXjF7wOrfAchX4PIm3cSj5tn14',
-    authDomain: 'crwn-db.firebaseapp.com',
-    databaseURL: 'https://crwn-db.firebaseio.com',
-    projectId: 'crwn-db',
-    storageBucket: 'crwn-db.appspot.com',
-    messagingSenderId: '850995411664',
-    appId: '1:850995411664:web:7ddc01d597846f65',
+    apiKey: "AIzaSyA4_uV-qJnbhhA3onppdF8617No1ieDFLA",
+    authDomain: "ecom-db-33dbe.firebaseapp.com",
+    projectId: "ecom-db-33dbe",
+    storageBucket: "ecom-db-33dbe.appspot.com",
+    messagingSenderId: "362185503979",
+    appId: "1:362185503979:web:f6687d99375d087c723aae"
 };
 
 firebase.initializeApp(config);
@@ -29,7 +28,7 @@ export const createUserProfileDocument = async (userAuth, additionalData) => {
                 displayName,
                 email,
                 createdAt,
-                ...additionalData,
+                ...additionalData
             });
         } catch (error) {
             console.log('error creating user', error.message);
@@ -46,7 +45,7 @@ export const addCollectionAndDocuments = async (
     const collectionRef = firestore.collection(collectionKey);
 
     const batch = firestore.batch();
-    objectsToAdd.forEach((obj) => {
+    objectsToAdd.forEach(obj => {
         const newDocRef = collectionRef.doc();
         batch.set(newDocRef, obj);
     });
@@ -54,15 +53,15 @@ export const addCollectionAndDocuments = async (
     return await batch.commit();
 };
 
-export const convertCollectionsSnapshotToMap = (collections) => {
-    const transformedCollection = collections.docs.map((doc) => {
+export const convertCollectionsSnapshotToMap = collections => {
+    const transformedCollection = collections.docs.map(doc => {
         const { title, items } = doc.data();
 
         return {
             routeName: encodeURI(title.toLowerCase()),
             id: doc.id,
             title,
-            items,
+            items
         };
     });
 
@@ -72,11 +71,20 @@ export const convertCollectionsSnapshotToMap = (collections) => {
     }, {});
 };
 
+export const getCurrentUser = () => {
+    return new Promise((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(userAuth => {
+            unsubscribe();
+            resolve(userAuth);
+        }, reject);
+    });
+};
+
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
 
-const provider = new firebase.auth.GoogleAuthProvider();
-provider.setCustomParameters({ prompt: 'select_account' });
-export const signInWithGoogle = () => auth.signInWithPopup(provider);
+export const googleProvider = new firebase.auth.GoogleAuthProvider();
+googleProvider.setCustomParameters({ prompt: 'select_account' });
+export const signInWithGoogle = () => auth.signInWithPopup(googleProvider);
 
 export default firebase;
